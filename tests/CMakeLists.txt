@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 ADD_DEFINITIONS(-D _UNICODE)
 ADD_DEFINITIONS(-D UNICODE)
@@ -15,7 +15,16 @@ include_directories(
 
 add_executable(op_test ${SRC_FILES}  )
 
-target_link_libraries(op_test ${op_com})
+# 链接到DLL的导入库
+# 注意：当DLL生成时，导入库会自动生成
+IF(CMAKE_CL_64)
+  # 直接链接到DLL文件
+link_directories(${CMAKE_BINARY_DIR}/libop/${CMAKE_BUILD_TYPE})
+ELSE(CMAKE_CL_64)
+  link_directories(${CMAKE_BINARY_DIR}/libop/${CMAKE_BUILD_TYPE})
+ENDIF(CMAKE_CL_64)
+
+target_link_libraries(op_test op_x64)
 
 IF(CMAKE_CL_64)
   install(TARGETS op_test  DESTINATION "${PROJECT_SOURCE_DIR}/bin/x64")

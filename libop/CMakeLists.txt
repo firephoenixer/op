@@ -1,5 +1,5 @@
 # 1.cmake version
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5)
 
 
 
@@ -11,7 +11,8 @@ cmake_minimum_required(VERSION 3.0.0)
 
 
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /DEF:op.def /NODEFAULTLIB")
+# 不使用/NODEFAULTLIB以避免链接错误
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /DEF:op.def")
 
  
 
@@ -118,6 +119,7 @@ add_custom_command(
   )
 
 add_library(${op_com} SHARED ${SRC_FILES} ${COM_SRC_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/./com/op.rc)
+# 只排除mfc110d而不是所有默认库
 SET_TARGET_PROPERTIES(${op_com} PROPERTIES LINK_FLAGS "/DEF:\"op.def\" /NODEFAULTLIB:\"mfc110d\"")
 # add_custom_command(TARGET ${op_com} PRE_BUILD  COMMAND midl ./com/op.idl /iid "./com/op_i.c" /env win32 /h "./com/op_i.h" /W1 /char signed /tlb "./com/op.tlb" /Oicf /target "NT60" /D "NDEBUG" /robust /nologo /proxy "op_p.c"  WORKING_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -143,8 +145,17 @@ include_directories(
 # 7.add link library
 #TARGET_LINK_LIBRARIES(libop BlackBone.lib)
 #TARGET_LINK_LIBRARIES(libop minhook.lib)
+# 添加必要的库依赖以解决链接错误
 TARGET_LINK_LIBRARIES(${op_com} BlackBone.lib)
 TARGET_LINK_LIBRARIES(${op_com} minhook.lib)
+TARGET_LINK_LIBRARIES(${op_com} legacy_stdio_definitions.lib)
+
+# 添加C运行时库
+# msvcrt.lib包含_stricmp和wcstok_s等函数
+TARGET_LINK_LIBRARIES(${op_com} msvcrt.lib ucrt.lib)
+
+# 添加DIA SDK相关库 - 位于Visual Studio安装目录下
+TARGET_LINK_LIBRARIES(${op_com} "C:/Program Files/Microsoft Visual Studio/2022/Community/DIA SDK/lib/amd64/diaguids.lib")
 
 # target_link_libraries(libop  ${OpenCV_LIBS})
 # target_link_libraries(libop msvcrt.lib)
